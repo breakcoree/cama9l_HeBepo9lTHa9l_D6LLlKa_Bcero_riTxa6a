@@ -1,0 +1,45 @@
+-- создание уник инд id INT PRIMARY KEY AUTO_INCREMENT; id - название, INT - тип данных, PRIMARY KEY (PK) - уник столбец (главный в строке), AUTO_INCREMENT - грубо говоря x+1, сам увеличивает id
+
+
+-- @Таблица: Клиент (Customer)
+CREATE TABLE customer (
+    id INT PRIMARY KEY AUTO_INCREMENT, 
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE
+);
+
+-- @Таблица: Заказ (Order)
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_date DATE NOT NULL,
+    customer_id INT NOT NULL,
+
+    FOREIGN KEY (customer_id)
+        REFERENCES customer(id)
+        ON DELETE CASCADE
+);
+
+-- @Таблица: Товар (Product)
+CREATE TABLE product (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- @Таблица: Товар в заказе (Order_Item)
+CREATE TABLE order_item (
+    order_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL CHECK (quantity > 0),
+
+    -- составной первичный ключ
+    PRIMARY KEY (order_id, product_id),
+
+    FOREIGN KEY (order_id)
+        REFERENCES orders(id)
+        ON DELETE CASCADE,
+
+    FOREIGN KEY (product_id)
+        REFERENCES product(id)
+        ON DELETE CASCADE
+);
