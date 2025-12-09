@@ -56,3 +56,6 @@ WHERE full_name = 'Ольга Морозова';
 --@1
 SELECT * 
 FROM Students;
+--@2
+SELECT CourseName, Credits
+FROM Courses;
