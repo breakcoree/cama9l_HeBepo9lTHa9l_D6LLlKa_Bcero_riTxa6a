@@ -76,3 +76,6 @@ SELECT *
 FROM Students 
 WHERE full_name LIKE 'Дмитрий%';
 --@7
+SELECT *
+FROM Enrollments
+WHERE grade IS NULL;
