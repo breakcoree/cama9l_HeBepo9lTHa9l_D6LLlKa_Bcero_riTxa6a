@@ -57,5 +57,22 @@ WHERE full_name = 'Ольга Морозова';
 SELECT * 
 FROM Students;
 --@2
-SELECT CourseName, Credits
-FROM Courses;
+SELECT course_name, credits 
+FROM courses;
+--@3
+SELECT *
+FROM Students
+WHERE start_year = 2021;
+--@4
+SELECT *
+FROM Courses
+WHERE credits > 4;
+--@5
+SELECT *
+FROM Students
+WHERE email = 'elena.kuznetsova@newmail.ru';
+--@6
+SELECT *
+FROM Students 
+WHERE full_name LIKE 'Дмитрий%';
+--@7
