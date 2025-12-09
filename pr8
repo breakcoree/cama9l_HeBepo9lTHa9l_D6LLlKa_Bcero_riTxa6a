@@ -1,0 +1,205 @@
+-- Таблица покупателей
+CREATE TABLE Customers (
+    customer_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    registration_date DATE NOT NULL,
+    recommended_by INT,
+    FOREIGN KEY (recommended_by) REFERENCES Customers(customer_id)
+);
+
+-- Таблица товаров
+CREATE TABLE Products (
+    product_id SERIAL PRIMARY KEY,
+    product_name VARCHAR(100) NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- Таблица заказов
+CREATE TABLE Orders (
+    order_id SERIAL PRIMARY KEY,
+    customer_id INT,
+    order_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL,
+    FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
+);
+
+-- Таблица состава заказа
+CREATE TABLE Order_Items (
+    order_item_id SERIAL PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT NOT NULL,
+    price_per_unit DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES Orders(order_id),
+    FOREIGN KEY (product_id) REFERENCES Products(product_id)
+);
+
+INSERT INTO Customers (customer_id, full_name, email, registration_date, recommended_by) VALUES
+(1, 'Иван Иванов', 'alexey.smirnov@mail.ru', '2020-12-15', NULL),
+(2, 'Мария Петрова', 'elena.kuznetsova@mail.ru', '2021-12-31', 1),
+(3, 'Алексей Смирнов', 'dmitry.novikov@mail.ru', '2021-12-16', 1),
+(4, 'Елена Васильева', 'olga.morozova@mail.ru', '2021-12-18', 2),
+(5, 'Андрей Николаев', 'oleg.elena@mail.ru', '2021-12-20', NULL);
+
+INSERT INTO Products (product_name, category, price) VALUES
+('Микрофон', 'Электроника', 123123.00),
+('Фен', 'Электроника', 345000.00),
+('Стиральная машинка', 'Бытовая техника', 345000.00),
+('Картошка', 'Овощи', 1500.00),
+('Пылесос', 'Бытовая техника', 50.00),
+('Стилус', 'Электроника', 1245.00);
+
+INSERT INTO Orders (customer_id, order_date, status) VALUES
+(1, '2024-05-10', 'Доставлен'),
+(2, '2024-05-12', 'В обработке'),
+(1, '2024-05-15', 'Отправлен'),
+(3, '2024-05-16', 'Доставлен');
+
+INSERT INTO Order_Items (order_id, product_id, quantity, price_per_unit) VALUES
+(1, 1, 1, 123123.00),
+(1, 4, 2, 1500.00),
+(2, 2, 1, 345000.00),
+(3, 3, 1, 345000.00),
+(4, 1, 1, 123123.00),
+(4, 5, 1, 50.00);
+
+-- ЗАДАНИЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯЯ
+
+-- @ЗАДАНИЕ 1: Заказы и их владельцы
+SELECT c.full_name, o.order_date
+FROM Orders o
+INNER JOIN Customers c
+    ON o.customer_id = c.customer_id;
+
+-- @ЗАДАНИЕ 2: Покупатели без заказов
+SELECT c.full_name
+FROM Customers c
+LEFT JOIN Orders o
+    ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
+
+-- @ЗАДАНИЕ 3: Состав заказа с order_id = 1
+SELECT p.product_name, oi.quantity, oi.price_per_unit
+FROM Order_Items oi
+JOIN Products p
+    ON oi.product_id = p.product_id
+WHERE oi.order_id = 1;
+
+-- @ЗАДАНИЕ 4: Покупатели, заказывавшие Микрофон
+SELECT full_name
+FROM Customers
+WHERE customer_id IN (
+    SELECT o.customer_id
+    FROM Orders o
+    JOIN Order_Items oi
+        ON o.order_id = oi.order_id
+    JOIN Products p
+        ON oi.product_id = p.product_id
+    WHERE p.product_name = 'Микрофон'
+);
+
+-- @ЗАДАНИЕ 5: Товары дороже среднего
+SELECT product_name, price
+FROM Products
+WHERE price > (SELECT AVG(price) FROM Products);
+
+-- @ЗАДАНИЕ 6: Заказы с товарами дороже 100000
+SELECT o.order_id, o.order_date
+FROM Orders o
+WHERE EXISTS (
+    SELECT 1
+    FROM Order_Items oi
+    JOIN Products p
+        ON oi.product_id = p.product_id
+    WHERE oi.order_id = o.order_id
+      AND p.price > 100000
+);
+
+-- @ЗАДАНИЕ 7: Покупатели, НЕ покупавшие 'Фен'
+
+-- @@Способ 1: LEFT JOIN
+SELECT c.full_name
+FROM Customers c
+LEFT JOIN Orders o
+    ON c.customer_id = o.customer_id
+LEFT JOIN Order_Items oi
+    ON o.order_id = oi.order_id
+LEFT JOIN Products p
+    ON oi.product_id = p.product_id AND p.product_name = 'Фен'
+WHERE p.product_id IS NULL;
+
+-- @@Способ 2: NOT IN
+SELECT full_name
+FROM Customers
+WHERE customer_id NOT IN (
+    SELECT o.customer_id
+    FROM Orders o
+    JOIN Order_Items oi
+        ON o.order_id = oi.order_id
+    JOIN Products p
+        ON oi.product_id = p.product_id
+    WHERE p.product_name = 'Фен'
+);
+
+-- @ЗАДАНИЕ 8: Товары, которые никто не заказывал
+SELECT p.product_name
+FROM Products p
+LEFT JOIN Order_Items oi
+    ON p.product_id = oi.product_id
+WHERE oi.product_id IS NULL;
+
+-- @ЗАДАНИЕ 9: Полный список активности
+SELECT c.full_name,
+       p.product_name,
+       oi.quantity
+FROM Customers c
+FULL JOIN Orders o
+    ON c.customer_id = o.customer_id
+FULL JOIN Order_Items oi
+    ON o.order_id = oi.order_id
+FULL JOIN Products p
+    ON oi.product_id = p.product_id;
+
+-- @ЗАДАНИЕ 10: Покупатели, купившие самый дорогой товар
+
+-- @@Способ 1: JOIN + подзапрос
+SELECT DISTINCT c.full_name
+FROM Customers c
+JOIN Orders o
+    ON c.customer_id = o.customer_id
+JOIN Order_Items oi
+    ON o.order_id = oi.order_id
+JOIN Products p
+    ON oi.product_id = p.product_id
+WHERE p.price = (SELECT MAX(price) FROM Products);
+
+-- @@Способ 2: Только подзапросы
+SELECT full_name
+FROM Customers
+WHERE customer_id IN (
+    SELECT customer_id
+    FROM Orders
+    WHERE order_id IN (
+        SELECT order_id
+        FROM Order_Items
+        WHERE product_id IN (
+            SELECT product_id
+            FROM Products
+            WHERE price = (SELECT MAX(price) FROM Products)
+        )
+    )
+);
+
+-- @ЗАДАНИЕ 11: Все пары "покупатель — категория"
+SELECT DISTINCT c.full_name, p.category
+FROM Customers c
+CROSS JOIN Products p;
+
+-- @ЗАДАНИЕ 12: Кто кого порекомендовал (SELF JOIN)
+SELECT c.full_name AS new_customer,
+       r.full_name AS recommended_by
+FROM Customers c
+LEFT JOIN Customers r
+    ON c.recommended_by = r.customer_id;
