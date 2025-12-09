@@ -79,3 +79,16 @@ WHERE full_name LIKE 'Дмитрий%';
 SELECT *
 FROM Enrollments
 WHERE grade IS NULL;
+--@8
+SELECT * 
+FROM courses 
+ORDER BY course_name;
+--@9
+SELECT *
+FROM students
+ORDER BY start_year, full_name;
+--@10
+SELECT *
+FROM students
+ORDER BY start_year DESC 
+LIMIT 2;
