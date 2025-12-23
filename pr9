@@ -1,4 +1,4 @@
--- Таблица покупателей
+-- Создание таблицы Покупателей
 CREATE TABLE Customers (
     customer_id SERIAL PRIMARY KEY,
     full_name VARCHAR(100) NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE Customers (
     FOREIGN KEY (recommended_by) REFERENCES Customers(customer_id)
 );
 
--- Таблица товаров
+-- Создание таблицы Товаров
 CREATE TABLE Products (
     product_id SERIAL PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE Products (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- Таблица заказов
+-- Создание таблицы Заказов
 CREATE TABLE Orders (
     order_id SERIAL PRIMARY KEY,
     customer_id INT,
@@ -25,7 +25,7 @@ CREATE TABLE Orders (
     FOREIGN KEY (customer_id) REFERENCES Customers(customer_id)
 );
 
--- Таблица состава заказа
+-- Создание таблицы Состава Заказа
 CREATE TABLE Order_Items (
     order_item_id SERIAL PRIMARY KEY,
     order_id INT,
@@ -36,20 +36,21 @@ CREATE TABLE Order_Items (
     FOREIGN KEY (product_id) REFERENCES Products(product_id)
 );
 
+-- Наполнение таблиц данными
 INSERT INTO Customers (customer_id, full_name, email, registration_date, recommended_by) VALUES
-(1, 'Иван Иванов', 'alexey.smirnov@mail.ru', '2020-12-15', NULL),
-(2, 'Мария Петрова', 'elena.kuznetsova@mail.ru', '2021-12-31', 1),
-(3, 'Алексей Смирнов', 'dmitry.novikov@mail.ru', '2021-12-16', 1),
-(4, 'Елена Васильева', 'olga.morozova@mail.ru', '2021-12-18', 2),
-(5, 'Андрей Николаев', 'oleg.elena@mail.ru', '2021-12-20', NULL);
+(1, 'Иван Иванов', 'ivan.ivanov@example.com', '2023-01-15', NULL),
+(2, 'Мария Петрова', 'maria.petrova@example.com', '2023-02-20', 1),
+(3, 'Алексей Смирнов', 'alex.smirnov@example.com', '2023-03-10', 1),
+(4, 'Елена Васильева', 'elena.v@example.com', '2023-04-01', 2),
+(5, 'Андрей Николаев', 'andrey.n@example.com', '2023-05-01', NULL);
 
 INSERT INTO Products (product_name, category, price) VALUES
-('Микрофон', 'Электроника', 123123.00),
-('Фен', 'Электроника', 345000.00),
-('Стиральная машинка', 'Бытовая техника', 345000.00),
-('Картошка', 'Овощи', 1500.00),
-('Пылесос', 'Бытовая техника', 50.00),
-('Стилус', 'Электроника', 1245.00);
+('Смартфон', 'Электроника', 70000.00),
+('Ноутбук', 'Электроника', 120000.00),
+('Кофемашина', 'Бытовая техника', 25000.00),
+('Книга "Основы SQL"', 'Книги', 1500.00),
+('Фен', 'Бытовая техника', 4500.00),
+('Пылесос', 'Бытовая техника', 15000.00);
 
 INSERT INTO Orders (customer_id, order_date, status) VALUES
 (1, '2024-05-10', 'Доставлен'),
@@ -58,61 +59,61 @@ INSERT INTO Orders (customer_id, order_date, status) VALUES
 (3, '2024-05-16', 'Доставлен');
 
 INSERT INTO Order_Items (order_id, product_id, quantity, price_per_unit) VALUES
-(1, 1, 1, 123123.00),
-(1, 4, 2, 1500.00),
-(2, 2, 1, 345000.00),
-(3, 3, 1, 345000.00),
-(4, 1, 1, 123123.00),
-(4, 5, 1, 50.00);
+(1, 1, 1, 70000.00),  -- Иван купил Смартфон
+(1, 4, 2, 1400.00),   -- и 2 книги
+(2, 2, 1, 120000.00), -- Мария купила Ноутбук
+(3, 3, 1, 25000.00),  -- Иван купил Кофемашину
+(4, 1, 1, 70000.00),  -- Алексей купил Смартфон
+(4, 5, 1, 4500.00);   -- и Фен
 
--- @ЗАДАНИЕ 1
+-- @Задание 1: Количество товаров по категориям (GROUP BY category группируем товары по категориям. Каждая группа соответствует одной категории)
 SELECT category, COUNT(*) AS product_count
 FROM Products
 GROUP BY category;
 
--- @ЗАДАНИЕ 2
+-- @Задание 2: Общая выручка
 SELECT SUM(quantity * price_per_unit) AS total_revenue
 FROM Order_Items;
 
--- @ЗАДАНИЕ 3
+-- @Задание 3: Количество заказов на клиента (берём всех клиентов (левая таблица),добавляем их заказы (правая таблица). GROUP BY по клиентам группируем по каждому клиенту)
 SELECT c.full_name, COUNT(o.order_id) AS orders_count
 FROM Customers c
-LEFT JOIN Orders o
+LEFT JOIN Orders o 
     ON c.customer_id = o.customer_id
-GROUP BY c.customer_id, c.full_name;
+GROUP BY c.customer_id;
 
--- @ЗАДАНИЕ 4
-SELECT AVG(order_total) AS average_order_value
+-- @Задание 4: Средний чек
+SELECT AVG(order_total) AS avg_order
 FROM (
     SELECT order_id, SUM(quantity * price_per_unit) AS order_total
     FROM Order_Items
     GROUP BY order_id
-) AS order_totals;
+) AS order_sums;
 
--- @ЗАДАНИЕ 5
+-- @Задание 5: Статус заказов (GROUP BY status группируем по статусам заказов)
 SELECT status, COUNT(*) AS orders_count
 FROM Orders
 GROUP BY status;
 
--- @ЗАДАНИЕ 6
+-- @Задание 6: "Крупные" категории (HAVING) (Если нужно отфильтровать группы по условию, используем HAVING. Здесь выбираем категории с количеством товаров больше 1)
 SELECT category, COUNT(*) AS product_count
 FROM Products
 GROUP BY category
 HAVING COUNT(*) > 1;
 
--- @ЗАДАНИЕ 7
+-- @Задание 7: "Лояльные" клиенты (HAVING) (То же самое, что и задание 6, с фильтром по количеству заказов больше 1)
 SELECT c.full_name, COUNT(o.order_id) AS orders_count
 FROM Customers c
-JOIN Orders o
+JOIN Orders o 
     ON c.customer_id = o.customer_id
-GROUP BY c.customer_id, c.full_name
+GROUP BY c.customer_id
 HAVING COUNT(o.order_id) > 1;
 
--- @ЗАДАНИЕ 8
-SELECT p.product_name, SUM(oi.quantity) AS total_sold
-FROM Order_Items oi
-JOIN Products p
-    ON oi.product_id = p.product_id
-GROUP BY p.product_id, p.product_name
-ORDER BY total_sold DESC
-LIMIT 1;
+-- @Задание 8 (со звездочкой): Самый продаваемый товар
+SELECT p.product_name
+FROM Products p
+JOIN Order_Items oi -- Соединение по условию ON
+    ON p.product_id = oi.product_id
+GROUP BY p.product_id
+ORDER BY SUM(oi.quantity) DESC -- Сортируем по количеству продаж по убыванию
+LIMIT 1; -- Берём самый продаваемый товар
