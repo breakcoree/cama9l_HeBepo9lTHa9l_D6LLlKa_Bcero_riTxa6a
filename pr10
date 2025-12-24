@@ -1,0 +1,74 @@
+-- @Задание 1: Приведение к Первой нормальной форме (1НФ) (Сначала каждая ячейка должна хранить только одно значение. Делаем отдельные строки для каждого участника)
+
+
+CREATE TABLE Projects (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(255)
+);
+
+CREATE TABLE Employees (
+    employee_id INT PRIMARY KEY,
+    employee_name VARCHAR(255)
+);
+
+CREATE TABLE ProjectTeam (
+    project_id INT,
+    employee_id INT,
+    PRIMARY KEY (project_id, employee_id),
+    FOREIGN KEY (project_id) REFERENCES Projects(project_id),
+    FOREIGN KEY (employee_id) REFERENCES Employees(employee_id)
+);
+
+
+-- @Задание 2: Приведение ко Второй нормальной форме (2НФ) (Каждое поле зависит от всего ключа. Если ключ (client_id, equipment_id), client_name зависит только от client_id, то надо выделить отдельную таблицу для клиентов)
+
+
+CREATE TABLE Clients (
+    client_id INT PRIMARY KEY,
+    client_name VARCHAR(255),
+    client_email VARCHAR(255)
+);
+
+CREATE TABLE Equipment (
+    equipment_id INT PRIMARY KEY,
+    equipment_name VARCHAR(255)
+);
+
+CREATE TABLE EquipmentRentals (
+    client_id INT,
+    equipment_id INT,
+    rental_date DATE,
+    PRIMARY KEY (client_id, equipment_id), -- уник запись (один и тот же клиент не может арендовать одно и то же оборудование дважды в таблице)
+    FOREIGN KEY (client_id) REFERENCES Clients(client_id),
+    FOREIGN KEY (equipment_id) REFERENCES Equipment(equipment_id)
+);
+
+
+-- @Задание 3 (со звездочкой): Комплексная нормализация (Очищает таблицу для безопасной работы с данными. Одновременно приводит таблицу к 1НФ, 2НФ и 3НФ)
+
+
+CREATE TABLE Students (
+    student_id INT PRIMARY KEY,
+    student_name VARCHAR(255)
+);
+
+CREATE TABLE Courses (
+    course_id INT PRIMARY KEY,
+    course_professor VARCHAR(255)
+);
+
+CREATE TABLE Assignments (
+    assignment_id INT PRIMARY KEY,
+    course_id INT,
+    assignment_name VARCHAR(255),
+    FOREIGN KEY (course_id) REFERENCES Courses(course_id)
+);
+
+CREATE TABLE StudentGrades (
+    student_id INT,
+    assignment_id INT,
+    grade INT,
+    PRIMARY KEY (student_id, assignment_id),
+    FOREIGN KEY (student_id) REFERENCES Students(student_id),
+    FOREIGN KEY (assignment_id) REFERENCES Assignments(assignment_id)
+);
