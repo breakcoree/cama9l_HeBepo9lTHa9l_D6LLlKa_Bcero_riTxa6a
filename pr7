@@ -23,7 +23,8 @@ INSERT INTO Students (full_name, email, start_year) VALUES
 ('Алексей Смирнов', 'alexey.smirnov@mail.ru', 2021),
 ('Елена Кузнецова', 'elena.kuznetsova@mail.ru', 2022),
 ('Дмитрий Новиков', 'dmitry.novikov@mail.ru', 2021),
-('Ольга Морозова', 'olga.morozova@mail.ru', 2023);
+('Ольга Морозова', 'olga.morozova@mail.ru', 2023),
+('Елена Кузнецова', 'elena.zzzkuznetsova@mail.ru', 2021);
 
 INSERT INTO Courses (course_name, credits) VALUES
 ('Введение в программирование', 5),
@@ -43,14 +44,26 @@ INSERT INTO Enrollments (student_id, course_id) VALUES
 -- @2
 UPDATE Students
 SET email = 'elena.kuznetsova@newmail.ru'
-WHERE full_name = 'Елена Кузнецова';
+WHERE student_id = (
+    SELECT student_id
+    FROM Students
+    WHERE full_name = 'Елена Кузнецова'
+    ORDER BY student_id
+    LIMIT 1
+);
 
 UPDATE Enrollments
 SET grade = 'A'
 WHERE student_id = 3 AND course_id = 1;
 
 DELETE FROM Students
-WHERE full_name = 'Ольга Морозова';
+WHERE student_id = (
+    SELECT student_id
+    FROM Students
+    WHERE full_name = 'Ольга Морозова'
+    ORDER BY student_id
+    LIMIT 1
+);
 
 
 --@1
@@ -74,7 +87,7 @@ WHERE email = 'elena.kuznetsova@newmail.ru';
 --@6
 SELECT *
 FROM Students 
-WHERE full_name LIKE 'Дмитрий%';
+WHERE full_name LIKE '%Дмитрий%';
 --@7
 SELECT *
 FROM Enrollments
